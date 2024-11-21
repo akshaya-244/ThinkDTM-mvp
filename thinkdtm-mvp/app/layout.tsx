@@ -21,11 +21,11 @@ export default function RootLayout({
 }>) {
   return (
   
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={font.className}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >

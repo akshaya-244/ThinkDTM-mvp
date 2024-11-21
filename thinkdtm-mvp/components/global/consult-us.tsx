@@ -18,15 +18,16 @@ import { z } from "zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Card, CardHeader, CardTitle, CardFooter, CardContent, CardDescription } from "@/components/ui/card";
+import { sendEmail } from "@/actions/sendEmail";
+
+
 
 const signupSchema = z.object({
-    username: z.string(),
+    name: z.string(),
     email: z.string().email({
       message: "Please enter a valid email address.",
     }),
-    password: z.string().min(6, {
-      message: "Password must be at least 6 characters.",
-    }),
+    message: z.string(),
   });
 
 export function RegisterForm() {
@@ -39,8 +40,9 @@ export function RegisterForm() {
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      name: "",
       email: "",
-      password: "",
+      message: "",
     },
   });
 
@@ -49,13 +51,16 @@ export function RegisterForm() {
         startTransition(async () => {
             // Reset the Values
             setSuccess("")
-            // setError("")
+            setError("")
             
-            // // Server Action
-            // const status = await signup(values);
-            
-            // setSuccess(status.success)
-            // setError(status.error)
+            // Server Action
+            const status = await sendEmail(values.name, values.email, values.message)
+
+            console.log("Status")
+            console.log(status)
+
+            setSuccess(status.success)
+            setError(status.error)
         })
     } catch (error) {
       console.error("Login error:", error);
@@ -63,11 +68,10 @@ export function RegisterForm() {
   }
 
   return (
-    <div>
-      <Card className="w-[450px] mt-20">
+    <div className="flex items-center justify-center mb-6 ">
+      <Card className="w-[500px] mt-20">
         <CardHeader>
-          <CardTitle className="text-3xl">Create an account</CardTitle>
-          <CardDescription>Welcome!</CardDescription>
+          <CardDescription className="text-center text-xl">Use form below or call us at (646) 530-1738 today! <br />Head Quartered in the Greater New York City Area- NY, NJ and CT</CardDescription>
         </CardHeader>
         <CardContent>
         <Form {...form}>
@@ -77,12 +81,12 @@ export function RegisterForm() {
           >
             <FormField
               control={form.control}
-              name="username"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your username" {...field} disabled = {isPending} />
+                    <Input placeholder="Enter your Name" {...field} disabled = {isPending} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,26 +107,22 @@ export function RegisterForm() {
             />
             <FormField
               control={form.control}
-              name="password"
+              name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Message</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      disabled = {isPending}
-                      {...field}
-                    />
+                    <Input className="h-32 " placeholder="Send us a message" {...field} disabled = {isPending} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          
           </form>
         </Form>
-        {/* <FormError message = {error} />
-        <FormSuccess message = {success} /> */}
+        <FormError message = {error} />
+        <FormSuccess message = {success} />
         </CardContent>
 
         <CardFooter className="flex justify-center">
@@ -130,10 +130,10 @@ export function RegisterForm() {
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
             disabled = {isPending}
-            className="px-5 w-full bg-white text-black"
+            className="px-5 w-full h-12 bg-white text-black"
             variant="outline"
           >
-            Sign Up
+            Send Message
           </Button>
         </CardFooter>
         <CardFooter className="opacity-30 text-sm flex items-center justify-around">
@@ -141,12 +141,41 @@ export function RegisterForm() {
         </CardFooter>
         <CardFooter>
         </CardFooter>
-        <CardFooter className="flex justify-center">
-          <Button variant="link" asChild>
-            <Link href="/auth/login">Have an account already?</Link>
-          </Button>
-        </CardFooter>
+      
       </Card>
     </div>
   );
+}
+
+
+interface FormSuccessProps {
+    message?: string;
+}
+
+const FormSuccess = ({message} : FormSuccessProps) => {
+
+    if (!message){
+        return null;
+    }
+
+    return <div className="mt-5 mb-1 bg-emerald-500/15 p-3 rounded-md flex items-center 
+    gap-x-2 text-sm text-success text-emerald-500">
+        <p>{message}</p>
+    </div>
+}
+
+
+interface FormErrorProps {
+    message?: string;
+}
+
+const FormError = ({message} : FormErrorProps) => {
+
+    if (!message){
+        return null;
+    }
+
+    return <div className="my-5 bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-red-300">
+        <p>{message}</p>
+    </div>
 }
